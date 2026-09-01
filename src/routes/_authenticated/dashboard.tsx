@@ -36,7 +36,7 @@ const title = "Dashboard — Pro Max Accounting ERP";
 const description =
   "Financial control center with revenue, expense, cash, receivables and inventory KPIs for a multi-company accounting ERP.";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title },
