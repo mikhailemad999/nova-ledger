@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from "react";
-import { Menu, Search, Bell, Plus, Building2, ChevronsUpDown } from "lucide-react";
+import { Menu, Search, Bell, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { AppSidebar } from "./AppSidebar";
 import { CommandPalette } from "./CommandPalette";
+import { TenantSwitcher } from "./TenantSwitcher";
 
 export function AppShell({ title, children }: { title: string; children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -57,11 +58,8 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
             >
               <Bell className="size-5" />
             </Button>
-            <div className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm sm:flex">
-              <Building2 className="size-4 text-primary" aria-hidden />
-              Acme Holding
-              <ChevronsUpDown className="size-3.5 text-muted-foreground" aria-hidden />
-            </div>
+            <TenantSwitcher />
+
             <Button size="icon" aria-label="Quick create" onClick={() => setPaletteOpen(true)}>
               <Plus className="size-5" />
             </Button>
