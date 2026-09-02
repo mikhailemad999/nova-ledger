@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from "react";
-import { Menu, Search, Bell, Plus, Building2, ChevronsUpDown } from "lucide-react";
+import { Menu, Search, Bell, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { AppSidebar } from "./AppSidebar";
 import { CommandPalette } from "./CommandPalette";
+import { TenantSwitcher } from "./TenantSwitcher";
 
 export function AppShell({ title, children }: { title: string; children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
