@@ -58,11 +58,8 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
             >
               <Bell className="size-5" />
             </Button>
-            <div className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm sm:flex">
-              <Building2 className="size-4 text-primary" aria-hidden />
-              Acme Holding
-              <ChevronsUpDown className="size-3.5 text-muted-foreground" aria-hidden />
-            </div>
+            <TenantSwitcher />
+
             <Button size="icon" aria-label="Quick create" onClick={() => setPaletteOpen(true)}>
               <Plus className="size-5" />
             </Button>
