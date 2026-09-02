@@ -42,10 +42,11 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setBranchId(localStorage.getItem(BRANCH_KEY));
   }, []);
 
-  const companies = data?.companies ?? [];
-  const company = companies.find((c) => c.id === companyId) ?? companies[0] ?? null;
-  const branches = (data?.branches ?? []).filter((b) => b.company_id === company?.id);
-  const branch = branches.find((b) => b.id === branchId) ?? null;
+  const companies = (data?.companies ?? []) as TenantCompany[];
+  const company = companies.find((c: TenantCompany) => c.id === companyId) ?? companies[0] ?? null;
+  const allBranches = (data?.branches ?? []) as TenantBranch[];
+  const branches = allBranches.filter((b: TenantBranch) => b.company_id === company?.id);
+  const branch = branches.find((b: TenantBranch) => b.id === branchId) ?? null;
 
   const setCompany = useCallback(
     async (id: string) => {
