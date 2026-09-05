@@ -93,7 +93,7 @@ export function AppSidebar({ onNavigate }: Props) {
       </div>
 
       <div className="border-t border-sidebar-border px-5 py-4 text-xs text-muted-foreground">
-        Phase 1 · Shell &amp; Dashboard
+        Phase 2 · Accounting core
       </div>
     </nav>
   );
