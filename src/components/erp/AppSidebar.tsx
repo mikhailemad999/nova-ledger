@@ -68,12 +68,23 @@ export function AppSidebar({ onNavigate }: Props) {
                 <ul className="ml-6 border-l border-sidebar-border pl-3">
                   {group.items!.map((item) => (
                     <li key={item.label}>
-                      <span className="flex items-center justify-between py-1.5 pr-2 text-sm text-muted-foreground">
-                        {item.label}
-                        <span className="text-[10px] uppercase tracking-wide">Soon</span>
-                      </span>
+                      {item.to ? (
+                        <Link
+                          to={item.to}
+                          className="flex items-center py-1.5 pr-2 text-sm text-sidebar-foreground/80 transition-colors hover:text-sidebar-foreground"
+                          activeProps={{ className: "text-primary" }}
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span className="flex items-center justify-between py-1.5 pr-2 text-sm text-muted-foreground">
+                          {item.label}
+                          <span className="text-[10px] uppercase tracking-wide">Soon</span>
+                        </span>
+                      )}
                     </li>
                   ))}
+
                 </ul>
               )}
             </div>
