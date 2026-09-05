@@ -363,6 +363,56 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          company_id: string
+          cost_price: number
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          sale_price: number
+          sku: string
+          track_inventory: boolean
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          cost_price?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sale_price?: number
+          sku: string
+          track_inventory?: boolean
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          cost_price?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sale_price?: number
+          sku?: string
+          track_inventory?: boolean
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -389,6 +439,274 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      stock_moves: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["stock_move_kind"]
+          moved_at: string
+          note: string | null
+          product_id: string
+          quantity: number
+          reference: string | null
+          unit_cost: number
+          warehouse_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["stock_move_kind"]
+          moved_at?: string
+          note?: string | null
+          product_id: string
+          quantity: number
+          reference?: string | null
+          unit_cost?: number
+          warehouse_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["stock_move_kind"]
+          moved_at?: string
+          note?: string | null
+          product_id?: string
+          quantity?: number
+          reference?: string | null
+          unit_cost?: number
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_moves_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_moves_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_moves_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trade_document_lines: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          document_id: string
+          id: string
+          line_total: number
+          product_id: string | null
+          quantity: number
+          tax_rate: number
+          unit_price: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          document_id: string
+          id?: string
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          tax_rate?: number
+          unit_price?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          document_id?: string
+          id?: string
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          tax_rate?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_document_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_document_lines_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "trade_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_document_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trade_documents: {
+        Row: {
+          branch_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          doc_date: string
+          doc_no: string
+          due_date: string | null
+          id: string
+          journal_entry_id: string | null
+          kind: Database["public"]["Enums"]["trade_doc_kind"]
+          notes: string | null
+          partner_id: string | null
+          status: Database["public"]["Enums"]["trade_doc_status"]
+          subtotal: number
+          tax_total: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          doc_date?: string
+          doc_no: string
+          due_date?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          kind: Database["public"]["Enums"]["trade_doc_kind"]
+          notes?: string | null
+          partner_id?: string | null
+          status?: Database["public"]["Enums"]["trade_doc_status"]
+          subtotal?: number
+          tax_total?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          doc_date?: string
+          doc_no?: string
+          due_date?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          kind?: Database["public"]["Enums"]["trade_doc_kind"]
+          notes?: string | null
+          partner_id?: string | null
+          status?: Database["public"]["Enums"]["trade_doc_status"]
+          subtotal?: number
+          tax_total?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_documents_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_documents_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_documents_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      warehouses: {
+        Row: {
+          address: string | null
+          branch_id: string | null
+          code: string
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          branch_id?: string | null
+          code: string
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          branch_id?: string | null
+          code?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouses_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -419,6 +737,10 @@ export type Database = {
         Args: { _company_id: string; _user_id: string }
         Returns: undefined
       }
+      seed_company_trade: {
+        Args: { _company_id: string; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       account_type: "asset" | "liability" | "equity" | "income" | "expense"
@@ -432,6 +754,9 @@ export type Database = {
         | "viewer"
       journal_status: "draft" | "posted" | "void"
       partner_kind: "customer" | "supplier"
+      stock_move_kind: "in" | "out" | "adjustment"
+      trade_doc_kind: "quotation" | "invoice" | "purchase_order"
+      trade_doc_status: "draft" | "confirmed" | "posted" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -571,6 +896,9 @@ export const Constants = {
       ],
       journal_status: ["draft", "posted", "void"],
       partner_kind: ["customer", "supplier"],
+      stock_move_kind: ["in", "out", "adjustment"],
+      trade_doc_kind: ["quotation", "invoice", "purchase_order"],
+      trade_doc_status: ["draft", "confirmed", "posted", "cancelled"],
     },
   },
 } as const
