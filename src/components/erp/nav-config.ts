@@ -19,7 +19,7 @@ export type NavItem = { label: string; to?: string };
 export type NavGroup = { label: string; icon: LucideIcon; to?: string; items?: NavItem[] };
 
 export const navGroups: NavGroup[] = [
-  { label: "Dashboard", icon: LayoutDashboard, to: "/" },
+  { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   {
     label: "Sales",
     icon: ShoppingCart,
@@ -28,7 +28,7 @@ export const navGroups: NavGroup[] = [
       { label: "Sales Orders" },
       { label: "Invoices" },
       { label: "Credit Notes" },
-      { label: "Customers" },
+      { label: "Customers", to: "/customers" },
     ],
   },
   {
@@ -38,15 +38,15 @@ export const navGroups: NavGroup[] = [
       { label: "Purchase Orders" },
       { label: "Bills" },
       { label: "Debit Notes" },
-      { label: "Suppliers" },
+      { label: "Suppliers", to: "/suppliers" },
     ],
   },
   {
     label: "Accounting",
     icon: BookOpen,
     items: [
-      { label: "Chart of Accounts" },
-      { label: "Journal Entries" },
+      { label: "Chart of Accounts", to: "/accounts" },
+      { label: "Journal Entries", to: "/journal" },
       { label: "General Ledger" },
       { label: "Trial Balance" },
     ],
