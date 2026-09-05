@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -193,9 +193,8 @@ function JournalPage() {
               </tr>
             )}
             {rows.map((e) => (
-              <>
+              <Fragment key={e.id}>
                 <tr
-                  key={e.id}
                   className="cursor-pointer border-b border-border/60 hover:bg-secondary/40"
                   onClick={() => setExpanded(expanded === e.id ? null : e.id)}
                 >
@@ -231,7 +230,7 @@ function JournalPage() {
                   </td>
                 </tr>
                 {expanded === e.id && (
-                  <tr key={`${e.id}-lines`} className="border-b border-border/60 bg-secondary/20">
+                  <tr className="border-b border-border/60 bg-secondary/20">
                     <td colSpan={7} className="px-8 py-3">
                       <table className="w-full text-xs">
                         <tbody>
@@ -257,7 +256,7 @@ function JournalPage() {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
             {!entries.isLoading && rows.length === 0 && (
               <tr>
