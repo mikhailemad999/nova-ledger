@@ -24,9 +24,9 @@ export const navGroups: NavGroup[] = [
     label: "Sales",
     icon: ShoppingCart,
     items: [
-      { label: "Quotations" },
+      { label: "Quotations", to: "/quotations" },
       { label: "Sales Orders" },
-      { label: "Invoices" },
+      { label: "Invoices", to: "/invoices" },
       { label: "Credit Notes" },
       { label: "Customers", to: "/customers" },
     ],
@@ -35,7 +35,7 @@ export const navGroups: NavGroup[] = [
     label: "Purchases",
     icon: Truck,
     items: [
-      { label: "Purchase Orders" },
+      { label: "Purchase Orders", to: "/purchase-orders" },
       { label: "Bills" },
       { label: "Debit Notes" },
       { label: "Suppliers", to: "/suppliers" },
@@ -60,9 +60,8 @@ export const navGroups: NavGroup[] = [
     label: "Inventory",
     icon: Boxes,
     items: [
-      { label: "Products" },
-      { label: "Warehouses" },
-      { label: "Stock" },
+      { label: "Products", to: "/products" },
+      { label: "Warehouses & Stock", to: "/warehouses" },
       { label: "Transfers" },
       { label: "Adjustments" },
     ],
