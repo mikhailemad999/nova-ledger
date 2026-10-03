@@ -45,7 +45,11 @@ export const listProducts = createServerFn({ method: "POST" })
     const ctx = context as Ctx;
     await requireCompanyPermission(ctx, data.companyId, "accounting.view");
     const [{ data: rows, error }, { data: moves }] = await Promise.all([
-      ctx.supabase.from("products").select(productSelect).eq("company_id", data.companyId).order("sku"),
+      ctx.supabase
+        .from("products")
+        .select(productSelect)
+        .eq("company_id", data.companyId)
+        .order("sku"),
       ctx.supabase
         .from("stock_moves")
         .select("product_id, kind, quantity, unit_cost")

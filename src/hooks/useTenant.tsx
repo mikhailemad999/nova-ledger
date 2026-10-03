@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyWorkspace, switchTenant } from "@/lib/tenant.functions";
@@ -8,7 +16,13 @@ const COMPANY_KEY = "erp.activeCompany";
 const BRANCH_KEY = "erp.activeBranch";
 
 export type TenantCompany = { id: string; name: string; currency: string; role: AppRole };
-export type TenantBranch = { id: string; company_id: string; name: string; code: string; is_active: boolean };
+export type TenantBranch = {
+  id: string;
+  company_id: string;
+  name: string;
+  code: string;
+  is_active: boolean;
+};
 
 type TenantValue = {
   loading: boolean;

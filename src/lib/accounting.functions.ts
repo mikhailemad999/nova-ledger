@@ -357,7 +357,9 @@ export const getDashboardMetrics = createServerFn({ method: "POST" })
     const byExpense = new Map<string, number>();
     rows
       .filter((r) => r.accounts.type === "expense")
-      .forEach((r) => byExpense.set(r.accounts.name, (byExpense.get(r.accounts.name) ?? 0) + dr(r)));
+      .forEach((r) =>
+        byExpense.set(r.accounts.name, (byExpense.get(r.accounts.name) ?? 0) + dr(r)),
+      );
 
     const byCustomer = new Map<string, number>();
     rows
@@ -369,7 +371,10 @@ export const getDashboardMetrics = createServerFn({ method: "POST" })
         ),
       );
 
-    const trialBalance = new Map<string, { code: string; name: string; debit: number; credit: number }>();
+    const trialBalance = new Map<
+      string,
+      { code: string; name: string; debit: number; credit: number }
+    >();
     rows.forEach((r) => {
       const key = r.accounts.code;
       const t = trialBalance.get(key) ?? { code: key, name: r.accounts.name, debit: 0, credit: 0 };

@@ -35,7 +35,11 @@ export const getMyWorkspace = createServerFn({ method: "GET" })
     const { supabase, userId } = context as Ctx;
 
     const [{ data: profile }, { data: memberships }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, email, avatar_url").eq("id", userId).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("id, full_name, email, avatar_url")
+        .eq("id", userId)
+        .maybeSingle(),
       supabase
         .from("memberships")
         .select("id, role, company_id, branch_id, companies(id, name, legal_name, currency)")

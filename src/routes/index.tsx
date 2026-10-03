@@ -62,7 +62,9 @@ function Landing() {
       </header>
 
       <section className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
-        <p className="num text-xs uppercase tracking-[0.2em] text-primary">Accounting · ERP · Multi-tenant</p>
+        <p className="num text-xs uppercase tracking-[0.2em] text-primary">
+          Accounting · ERP · Multi-tenant
+        </p>
         <h1 className="mt-4 font-display text-4xl font-semibold leading-tight sm:text-5xl">
           Run every company's books from one secure workspace
         </h1>

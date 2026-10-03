@@ -114,7 +114,11 @@ function AuthPage() {
           </Tabs>
 
           <h1 className="mt-5 font-display text-xl font-semibold">
-            {mode === "login" ? "Sign in" : mode === "register" ? "Create your account" : "Reset password"}
+            {mode === "login"
+              ? "Sign in"
+              : mode === "register"
+                ? "Create your account"
+                : "Reset password"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "reset"
@@ -126,7 +130,12 @@ function AuthPage() {
             {mode === "register" && (
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full name</Label>
-                <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
               </div>
             )}
             <div className="space-y-2">
@@ -156,14 +165,19 @@ function AuthPage() {
             )}
             <Button type="submit" className="w-full" disabled={busy}>
               {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {mode === "login" ? "Sign in" : mode === "register" ? "Create account" : "Send reset link"}
+              {mode === "login"
+                ? "Sign in"
+                : mode === "register"
+                  ? "Create account"
+                  : "Send reset link"}
             </Button>
           </form>
 
           {mode !== "reset" && (
             <>
               <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+                <span className="h-px flex-1 bg-border" /> or{" "}
+                <span className="h-px flex-1 bg-border" />
               </div>
               <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={busy}>
                 Continue with Google

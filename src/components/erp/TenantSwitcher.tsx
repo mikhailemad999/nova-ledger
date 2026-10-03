@@ -102,7 +102,10 @@ export function TenantSwitcher() {
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Branches</DropdownMenuLabel>
           <DropdownMenuItem onSelect={() => void tenant.setBranch(null)}>
-            <Check className={`size-4 ${!tenant.branch ? "opacity-100" : "opacity-0"}`} aria-hidden />
+            <Check
+              className={`size-4 ${!tenant.branch ? "opacity-100" : "opacity-0"}`}
+              aria-hidden
+            />
             All branches
           </DropdownMenuItem>
           {tenant.branches.map((b) => (
@@ -140,9 +143,17 @@ export function TenantSwitcher() {
           <div className="space-y-4">
             <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
             {dialog === "branch" && (
-              <Input placeholder="Code (e.g. HQ)" value={code} onChange={(e) => setCode(e.target.value)} />
+              <Input
+                placeholder="Code (e.g. HQ)"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
             )}
-            <Button className="w-full" disabled={busy || name.length < 2} onClick={() => void handleCreate()}>
+            <Button
+              className="w-full"
+              disabled={busy || name.length < 2}
+              onClick={() => void handleCreate()}
+            >
               Create
             </Button>
           </div>

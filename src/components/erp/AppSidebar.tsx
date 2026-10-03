@@ -84,7 +84,6 @@ export function AppSidebar({ onNavigate }: Props) {
                       )}
                     </li>
                   ))}
-
                 </ul>
               )}
             </div>

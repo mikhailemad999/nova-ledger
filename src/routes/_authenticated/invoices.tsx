@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { TradeDocsPage } from "@/components/erp/TradeDocsPage";
 
 const title = "Invoices · Pro Max Accounting ERP";
-const description = "Create customer invoices and post them to the ledger with matching stock movements.";
+const description =
+  "Create customer invoices and post them to the ledger with matching stock movements.";
 
 export const Route = createFileRoute("/_authenticated/invoices")({
   head: () => ({

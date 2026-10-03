@@ -218,7 +218,9 @@ export const postTradeDocument = createServerFn({ method: "POST" })
       if (tax > 0) lines.push({ account_id: need("2100", "VAT Payable"), debit: 0, credit: tax });
 
       const cogs = docLines.reduce(
-        (s, l) => s + (l.products?.track_inventory ? Number(l.quantity) * Number(l.products.cost_price) : 0),
+        (s, l) =>
+          s +
+          (l.products?.track_inventory ? Number(l.quantity) * Number(l.products.cost_price) : 0),
         0,
       );
       if (cogs > 0) {
@@ -248,7 +250,8 @@ export const postTradeDocument = createServerFn({ method: "POST" })
         0,
       );
       const expensed = subtotal - stocked;
-      if (stocked > 0) lines.push({ account_id: need("1200", "Inventory"), debit: stocked, credit: 0 });
+      if (stocked > 0)
+        lines.push({ account_id: need("1200", "Inventory"), debit: stocked, credit: 0 });
       if (expensed > 0)
         lines.push({ account_id: need("5000", "Cost of Goods Sold"), debit: expensed, credit: 0 });
       if (tax > 0) lines.push({ account_id: need("2100", "VAT Payable"), debit: tax, credit: 0 });

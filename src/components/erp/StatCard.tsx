@@ -1,15 +1,7 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function StatCard({
-  label,
-  value,
-  delta,
-}: {
-  label: string;
-  value: string;
-  delta: number;
-}) {
+export function StatCard({ label, value, delta }: { label: string; value: string; delta: number }) {
   const positive = delta >= 0;
   const Icon = positive ? ArrowUpRight : ArrowDownRight;
   return (
