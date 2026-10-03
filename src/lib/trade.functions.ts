@@ -199,88 +199,16 @@ export const postTradeDocument = createServerFn({ method: "POST" })
       .select("id, code")
       .eq("company_id", data.companyId);
     const byCode = new Map<string, string>((accounts ?? []).map((a: any) => [a.code, a.id]));
-    const need = (code: string, label: string) => {
-      const id = byCode.get(code);
-      if (!id) throw new Error(`Missing account ${code} (${label}) in the chart of accounts`);
-      return id;
-    };
-
-    const subtotal = Number(doc.subtotal);
-    const tax = Number(doc.tax_total);
-    const total = Number(doc.total);
-    const lines: any[] = [];
-    const stock: any[] = [];
-    const docLines = (doc.trade_document_lines ?? []) as any[];
-
-    if (doc.kind === "invoice") {
-      lines.push({ account_id: need("1100", "Accounts Receivable"), debit: total, credit: 0 });
-      lines.push({ account_id: need("4000", "Product Sales"), debit: 0, credit: subtotal });
-      if (tax > 0) lines.push({ account_id: need("2100", "VAT Payable"), debit: 0, credit: tax });
-
-      const cogs = docLines.reduce(
-        (s, l) =>
-          s +
-          (l.products?.track_inventory ? Number(l.quantity) * Number(l.products.cost_price) : 0),
-        0,
-      );
-      if (cogs > 0) {
-        lines.push({ account_id: need("5000", "Cost of Goods Sold"), debit: cogs, credit: 0 });
-        lines.push({ account_id: need("1200", "Inventory"), debit: 0, credit: cogs });
-      }
-      if (data.warehouseId) {
-        docLines
-          .filter((l) => l.product_id && l.products?.track_inventory)
-          .forEach((l) =>
-            stock.push({
-              company_id: data.companyId,
-              warehouse_id: data.warehouseId,
-              product_id: l.product_id,
-              kind: "out",
-              quantity: Number(l.quantity),
-              unit_cost: Number(l.products.cost_price),
-              reference: doc.doc_no,
-              moved_at: doc.doc_date,
-              created_by: ctx.userId,
-            }),
-          );
-      }
-    } else {
-      const stocked = docLines.reduce(
-        (s, l) => s + (l.products?.track_inventory ? Number(l.line_total) : 0),
-        0,
-      );
-      const expensed = subtotal - stocked;
-      if (stocked > 0)
-        lines.push({ account_id: need("1200", "Inventory"), debit: stocked, credit: 0 });
-      if (expensed > 0)
-        lines.push({ account_id: need("5000", "Cost of Goods Sold"), debit: expensed, credit: 0 });
-      if (tax > 0) lines.push({ account_id: need("2100", "VAT Payable"), debit: tax, credit: 0 });
-      lines.push({ account_id: need("2000", "Accounts Payable"), debit: 0, credit: total });
-
-      if (data.warehouseId) {
-        docLines
-          .filter((l) => l.product_id && l.products?.track_inventory)
-          .forEach((l) =>
-            stock.push({
-              company_id: data.companyId,
-              warehouse_id: data.warehouseId,
-              product_id: l.product_id,
-              kind: "in",
-              quantity: Number(l.quantity),
-              unit_cost: Number(l.unit_price),
-              reference: doc.doc_no,
-              moved_at: doc.doc_date,
-              created_by: ctx.userId,
-            }),
-          );
-      }
-    }
-
-    const debit = lines.reduce((s, l) => s + l.debit, 0);
-    const credit = lines.reduce((s, l) => s + l.credit, 0);
-    if (Math.round(debit * 100) !== Math.round(credit * 100)) {
-      throw new Error(`Entry is out of balance: debits ${debit} vs credits ${credit}`);
-    }
+    const plan = buildPostingPlan(doc as PostingDoc, byCode, Boolean(data.warehouseId));
+    const lines = plan.lines;
+    const stock = plan.moves.map((m) => ({
+      ...m,
+      company_id: data.companyId,
+      warehouse_id: data.warehouseId,
+      reference: doc.doc_no,
+      moved_at: doc.doc_date,
+      created_by: ctx.userId,
+    }));
 
     const { data: last } = await ctx.supabase
       .from("journal_entries")
