@@ -78,17 +78,64 @@ export type InvoiceRow = {
 };
 
 export const recentInvoices: InvoiceRow[] = [
-  { number: "INV-2026-000184", customer: "Nord Systems LLC", date: "Aug 09", due: "Sep 08", total: 18400, status: "Posted" },
-  { number: "INV-2026-000183", customer: "Alkindi Trading", date: "Aug 08", due: "Aug 23", total: 7250, status: "Partially Paid" },
-  { number: "INV-2026-000182", customer: "Vertex Manufacturing", date: "Aug 07", due: "Jul 30", total: 32900, status: "Overdue" },
-  { number: "INV-2026-000181", customer: "Bluepeak Retail", date: "Aug 06", due: "Sep 05", total: 12100, status: "Paid" },
-  { number: "INV-2026-000180", customer: "Cedar Logistics", date: "Aug 05", due: "Sep 04", total: 5480, status: "Draft" },
+  {
+    number: "INV-2026-000184",
+    customer: "Nord Systems LLC",
+    date: "Aug 09",
+    due: "Sep 08",
+    total: 18400,
+    status: "Posted",
+  },
+  {
+    number: "INV-2026-000183",
+    customer: "Alkindi Trading",
+    date: "Aug 08",
+    due: "Aug 23",
+    total: 7250,
+    status: "Partially Paid",
+  },
+  {
+    number: "INV-2026-000182",
+    customer: "Vertex Manufacturing",
+    date: "Aug 07",
+    due: "Jul 30",
+    total: 32900,
+    status: "Overdue",
+  },
+  {
+    number: "INV-2026-000181",
+    customer: "Bluepeak Retail",
+    date: "Aug 06",
+    due: "Sep 05",
+    total: 12100,
+    status: "Paid",
+  },
+  {
+    number: "INV-2026-000180",
+    customer: "Cedar Logistics",
+    date: "Aug 05",
+    due: "Sep 04",
+    total: 5480,
+    status: "Draft",
+  },
 ];
 
 export const pendingApprovals = [
-  { title: "Purchase Order PO-2026-000212", detail: "Vertex Manufacturing · $12,400", level: "Finance Approval" },
-  { title: "Expense EXP-2026-000341", detail: "M. Haddad · Travel · $1,860", level: "Manager Approval" },
-  { title: "Journal Entry JE-2026-000098", detail: "Depreciation run · August", level: "Finance Manager" },
+  {
+    title: "Purchase Order PO-2026-000212",
+    detail: "Vertex Manufacturing · $12,400",
+    level: "Finance Approval",
+  },
+  {
+    title: "Expense EXP-2026-000341",
+    detail: "M. Haddad · Travel · $1,860",
+    level: "Manager Approval",
+  },
+  {
+    title: "Journal Entry JE-2026-000098",
+    detail: "Depreciation run · August",
+    level: "Finance Manager",
+  },
 ];
 
 export const lowStock = [
@@ -106,8 +153,23 @@ export const topCustomers = [
 ];
 
 export const recentTransactions = [
-  { ref: "PAY-2026-000512", desc: "Customer payment · Bluepeak Retail", amount: 12100, kind: "in" as const },
-  { ref: "PAY-2026-000511", desc: "Supplier payment · Orion Supplies", amount: 8400, kind: "out" as const },
+  {
+    ref: "PAY-2026-000512",
+    desc: "Customer payment · Bluepeak Retail",
+    amount: 12100,
+    kind: "in" as const,
+  },
+  {
+    ref: "PAY-2026-000511",
+    desc: "Supplier payment · Orion Supplies",
+    amount: 8400,
+    kind: "out" as const,
+  },
   { ref: "JE-2026-000097", desc: "Payroll accrual · August", amount: 41200, kind: "out" as const },
-  { ref: "PAY-2026-000510", desc: "Customer payment · Nord Systems", amount: 18400, kind: "in" as const },
+  {
+    ref: "PAY-2026-000510",
+    desc: "Customer payment · Nord Systems",
+    amount: 18400,
+    kind: "in" as const,
+  },
 ];

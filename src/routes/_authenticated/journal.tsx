@@ -77,7 +77,9 @@ function JournalPage() {
 
   const canPost = can(tenant.role, "accounting.post");
   const fmt = (n: number) =>
-    new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(
+      n,
+    );
 
   const entries = useQuery({
     queryKey: ["journal", companyId, tenant.branch?.id ?? null],
@@ -319,7 +321,9 @@ function JournalPage() {
                     className="col-span-5 h-10 rounded-md border border-input bg-background px-2 text-sm"
                     value={line.accountId}
                     onChange={(e) =>
-                      setLines(lines.map((l, j) => (i === j ? { ...l, accountId: e.target.value } : l)))
+                      setLines(
+                        lines.map((l, j) => (i === j ? { ...l, accountId: e.target.value } : l)),
+                      )
                     }
                   >
                     <option value="">Select account…</option>
@@ -335,7 +339,9 @@ function JournalPage() {
                     className="col-span-3"
                     value={line.description}
                     onChange={(e) =>
-                      setLines(lines.map((l, j) => (i === j ? { ...l, description: e.target.value } : l)))
+                      setLines(
+                        lines.map((l, j) => (i === j ? { ...l, description: e.target.value } : l)),
+                      )
                     }
                   />
                   <Input

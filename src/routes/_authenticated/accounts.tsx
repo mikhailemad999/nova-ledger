@@ -139,7 +139,9 @@ function AccountsPage() {
                 id="type"
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value as (typeof TYPES)[number] })}
+                onChange={(e) =>
+                  setForm({ ...form, type: e.target.value as (typeof TYPES)[number] })
+                }
               >
                 {TYPES.map((t) => (
                   <option key={t} value={t} className="capitalize">

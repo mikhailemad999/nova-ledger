@@ -6,7 +6,12 @@ import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/erp/AppShell";
 import { useTenant } from "@/hooks/useTenant";
 import { can } from "@/lib/rbac";
-import { createProduct, deleteProduct, listProducts, updateProduct } from "@/lib/inventory.functions";
+import {
+  createProduct,
+  deleteProduct,
+  listProducts,
+  updateProduct,
+} from "@/lib/inventory.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +42,14 @@ type Draft = {
   costPrice: number;
   trackInventory: boolean;
 };
-const empty: Draft = { sku: "", name: "", unit: "unit", salePrice: 0, costPrice: 0, trackInventory: true };
+const empty: Draft = {
+  sku: "",
+  name: "",
+  unit: "unit",
+  salePrice: 0,
+  costPrice: 0,
+  trackInventory: true,
+};
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 function ProductsPage() {
@@ -83,7 +95,8 @@ function ProductsPage() {
     <AppShell title="Products">
       <div className="mb-5 flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {rows.length} products · Inventory value <span className="num font-medium text-foreground">{money(valuation)}</span>
+          {rows.length} products · Inventory value{" "}
+          <span className="num font-medium text-foreground">{money(valuation)}</span>
         </p>
         {canWrite && (
           <Button onClick={() => setDraft({ ...empty })}>
@@ -121,7 +134,9 @@ function ProductsPage() {
                 <td className="num px-4 py-3 text-right">
                   {p.track_inventory ? `${p.on_hand} ${p.unit}` : "—"}
                 </td>
-                <td className="num px-4 py-3 text-right">{p.track_inventory ? money(p.stock_value) : "—"}</td>
+                <td className="num px-4 py-3 text-right">
+                  {p.track_inventory ? money(p.stock_value) : "—"}
+                </td>
                 <td className="px-4 py-3 text-right">
                   {canWrite && (
                     <Button
@@ -144,7 +159,12 @@ function ProductsPage() {
                     </Button>
                   )}
                   {canDelete && (
-                    <Button variant="ghost" size="icon" aria-label={`Delete ${p.name}`} onClick={() => remove.mutate(p.id)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Delete ${p.name}`}
+                      onClick={() => remove.mutate(p.id)}
+                    >
                       <Trash2 className="size-4 text-destructive" />
                     </Button>
                   )}
@@ -170,26 +190,59 @@ function ProductsPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="sku">SKU</Label>
-                <Input id="sku" required value={draft.sku} onChange={(e) => setDraft({ ...draft, sku: e.target.value })} />
+                <Input
+                  id="sku"
+                  required
+                  value={draft.sku}
+                  onChange={(e) => setDraft({ ...draft, sku: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pname">Name</Label>
-                <Input id="pname" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+                <Input
+                  id="pname"
+                  required
+                  value={draft.name}
+                  onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unit">Unit</Label>
-                <Input id="unit" required value={draft.unit} onChange={(e) => setDraft({ ...draft, unit: e.target.value })} />
+                <Input
+                  id="unit"
+                  required
+                  value={draft.unit}
+                  onChange={(e) => setDraft({ ...draft, unit: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="sale">Sale price</Label>
-                <Input id="sale" type="number" min="0" step="0.01" value={draft.salePrice} onChange={(e) => setDraft({ ...draft, salePrice: Number(e.target.value) })} />
+                <Input
+                  id="sale"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={draft.salePrice}
+                  onChange={(e) => setDraft({ ...draft, salePrice: Number(e.target.value) })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cost">Cost price</Label>
-                <Input id="cost" type="number" min="0" step="0.01" value={draft.costPrice} onChange={(e) => setDraft({ ...draft, costPrice: Number(e.target.value) })} />
+                <Input
+                  id="cost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={draft.costPrice}
+                  onChange={(e) => setDraft({ ...draft, costPrice: Number(e.target.value) })}
+                />
               </div>
               <label className="flex items-center gap-2 self-end pb-2 text-sm">
-                <input type="checkbox" checked={draft.trackInventory} onChange={(e) => setDraft({ ...draft, trackInventory: e.target.checked })} />
+                <input
+                  type="checkbox"
+                  checked={draft.trackInventory}
+                  onChange={(e) => setDraft({ ...draft, trackInventory: e.target.checked })}
+                />
                 Track stock
               </label>
               <Button type="submit" className="sm:col-span-2" disabled={save.isPending}>

@@ -21,13 +21,20 @@ import { toast } from "sonner";
 
 export type TradeKind = "quotation" | "invoice" | "purchase_order";
 
-const META: Record<TradeKind, { title: string; single: string; partner: "customer" | "supplier" }> = {
-  quotation: { title: "Quotations", single: "quotation", partner: "customer" },
-  invoice: { title: "Invoices", single: "invoice", partner: "customer" },
-  purchase_order: { title: "Purchase Orders", single: "purchase order", partner: "supplier" },
-};
+const META: Record<TradeKind, { title: string; single: string; partner: "customer" | "supplier" }> =
+  {
+    quotation: { title: "Quotations", single: "quotation", partner: "customer" },
+    invoice: { title: "Invoices", single: "invoice", partner: "customer" },
+    purchase_order: { title: "Purchase Orders", single: "purchase order", partner: "supplier" },
+  };
 
-type Line = { productId: string; description: string; quantity: number; unitPrice: number; taxRate: number };
+type Line = {
+  productId: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+};
 const emptyLine: Line = { productId: "", description: "", quantity: 1, unitPrice: 0, taxRate: 0 };
 
 const money = (n: number) =>
@@ -311,7 +318,9 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
           >
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="partner">{meta.partner === "customer" ? "Customer" : "Supplier"}</Label>
+                <Label htmlFor="partner">
+                  {meta.partner === "customer" ? "Customer" : "Supplier"}
+                </Label>
                 <select
                   id="partner"
                   className="h-10 w-full rounded-md border border-border bg-background px-2 text-sm"
@@ -441,7 +450,12 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
                   </Button>
                 </div>
               ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => setLines([...lines, { ...emptyLine }])}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setLines([...lines, { ...emptyLine }])}
+              >
                 <Plus className="mr-1 size-4" /> Add line
               </Button>
             </div>

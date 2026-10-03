@@ -148,7 +148,11 @@ function Dashboard() {
                 <XAxis dataKey="month" stroke="#94A3B8" fontSize={12} />
                 <YAxis stroke="#94A3B8" fontSize={12} />
                 <Tooltip
-                  contentStyle={{ background: "#151B25", border: "1px solid #2A3441", borderRadius: 8 }}
+                  contentStyle={{
+                    background: "#151B25",
+                    border: "1px solid #2A3441",
+                    borderRadius: 8,
+                  }}
                   formatter={(v: number) => fmt(v)}
                 />
                 <Area dataKey="revenue" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.2} />
@@ -163,13 +167,23 @@ function Dashboard() {
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={data.expenseBreakdown} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80}>
+                <Pie
+                  data={data.expenseBreakdown}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={50}
+                  outerRadius={80}
+                >
                   {data.expenseBreakdown.map((_, i) => (
                     <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: "#151B25", border: "1px solid #2A3441", borderRadius: 8 }}
+                  contentStyle={{
+                    background: "#151B25",
+                    border: "1px solid #2A3441",
+                    borderRadius: 8,
+                  }}
                   formatter={(v: number) => fmt(v)}
                 />
               </PieChart>
@@ -189,7 +203,11 @@ function Dashboard() {
                 <YAxis stroke="#94A3B8" fontSize={12} />
                 <Tooltip
                   cursor={{ fill: "#1A1F29" }}
-                  contentStyle={{ background: "#151B25", border: "1px solid #2A3441", borderRadius: 8 }}
+                  contentStyle={{
+                    background: "#151B25",
+                    border: "1px solid #2A3441",
+                    borderRadius: 8,
+                  }}
                   formatter={(v: number) => fmt(v)}
                 />
                 <Bar dataKey="value" fill="#10B981" radius={[4, 4, 0, 0]} />
