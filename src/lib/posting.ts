@@ -18,7 +18,12 @@ export type PostingDoc = {
 };
 
 export type PlanLine = { account_id: string; debit: number; credit: number };
-export type PlanMove = { product_id: string; kind: "in" | "out"; quantity: number; unit_cost: number };
+export type PlanMove = {
+  product_id: string;
+  kind: "in" | "out";
+  quantity: number;
+  unit_cost: number;
+};
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -64,7 +69,8 @@ export function buildPostingPlan(
   } else {
     const stocked = r2(tracked.reduce((s, l) => s + Number(l.line_total), 0));
     const expensed = r2(subtotal - stocked);
-    if (stocked > 0) lines.push({ account_id: need("1200", "Inventory"), debit: stocked, credit: 0 });
+    if (stocked > 0)
+      lines.push({ account_id: need("1200", "Inventory"), debit: stocked, credit: 0 });
     if (expensed > 0)
       lines.push({ account_id: need("5000", "Cost of Goods Sold"), debit: expensed, credit: 0 });
     if (tax > 0) lines.push({ account_id: need("2100", "VAT Payable"), debit: tax, credit: 0 });
