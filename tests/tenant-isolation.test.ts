@@ -30,7 +30,10 @@ async function signIn(email: string, password: string) {
 }
 
 async function companiesOf(client: SupabaseClient, userId: string) {
-  const { data, error } = await client.from("memberships").select("company_id").eq("user_id", userId);
+  const { data, error } = await client
+    .from("memberships")
+    .select("company_id")
+    .eq("user_id", userId);
   if (error) throw error;
   return (data ?? []).map((m) => m.company_id as string);
 }
@@ -88,9 +91,17 @@ describe.skipIf(!ready)("tenant isolation between two companies", () => {
     });
 
     it(`user B cannot change or delete company A's ${label}`, async () => {
-      const { data: updated } = await b.from(table).update(patch).eq("id", sample[sampleKey]).select("id");
+      const { data: updated } = await b
+        .from(table)
+        .update(patch)
+        .eq("id", sample[sampleKey])
+        .select("id");
       expect(updated ?? []).toHaveLength(0);
-      const { data: deleted } = await b.from(table).delete().eq("id", sample[sampleKey]).select("id");
+      const { data: deleted } = await b
+        .from(table)
+        .delete()
+        .eq("id", sample[sampleKey])
+        .select("id");
       expect(deleted ?? []).toHaveLength(0);
       // Still intact for the owner.
       const { data } = await a.from(table).select("id").eq("id", sample[sampleKey]);
@@ -102,7 +113,9 @@ describe.skipIf(!ready)("tenant isolation between two companies", () => {
     const attempts = await Promise.all([
       b.from("partners").insert({ company_id: companyA, kind: "customer", name: "Intruder" }),
       b.from("products").insert({ company_id: companyA, sku: "X-INTRUDER", name: "Intruder" }),
-      b.from("trade_documents").insert({ company_id: companyA, kind: "invoice", doc_no: "INV-HACK" }),
+      b
+        .from("trade_documents")
+        .insert({ company_id: companyA, kind: "invoice", doc_no: "INV-HACK" }),
     ]);
     for (const res of attempts) expect(res.error).toBeTruthy();
   });
