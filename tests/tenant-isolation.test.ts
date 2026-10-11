@@ -64,16 +64,24 @@ describe.skipIf(!ready)("tenant isolation between two companies", () => {
     sample.customer = (await pick("partners", ["kind", "customer"]))!;
     sample.supplier = (await pick("partners", ["kind", "supplier"]))!;
     sample.invoice = (await pick("trade_documents", ["kind", "invoice"]))!;
+    sample.quotation = (await pick("trade_documents", ["kind", "quotation"]))!;
+    sample.purchase_order = (await pick("trade_documents", ["kind", "purchase_order"]))!;
     sample.product = (await pick("products"))!;
+    sample.warehouse = (await pick("warehouses"))!;
     sample.stock_move = (await pick("stock_moves"))!;
+    sample.journal = (await pick("journal_entries"))!;
   });
 
   const cases: [string, string, string, Record<string, unknown>][] = [
     ["customers", "partners", "customer", { name: "Hijacked" }],
     ["suppliers", "partners", "supplier", { name: "Hijacked" }],
     ["invoices", "trade_documents", "invoice", { notes: "Hijacked" }],
+    ["quotations", "trade_documents", "quotation", { notes: "Hijacked" }],
+    ["purchase orders", "trade_documents", "purchase_order", { notes: "Hijacked" }],
     ["products", "products", "product", { name: "Hijacked" }],
+    ["warehouses", "warehouses", "warehouse", { name: "Hijacked" }],
     ["stock movements", "stock_moves", "stock_move", { note: "Hijacked" }],
+    ["journal entries", "journal_entries", "journal", { memo: "Hijacked" }],
   ];
 
   for (const [label, table, sampleKey, patch] of cases) {
