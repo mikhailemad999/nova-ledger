@@ -12,6 +12,7 @@ import {
   Target,
   BarChart3,
   Settings,
+  MessageSquareText as Sparkle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -20,6 +21,7 @@ export type NavGroup = { label: string; icon: LucideIcon; to?: string; items?: N
 
 export const navGroups: NavGroup[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
+  { label: "Ask your books", icon: Sparkle, to: "/ask" },
   {
     label: "Sales",
     icon: ShoppingCart,
