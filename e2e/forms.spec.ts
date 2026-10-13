@@ -91,7 +91,10 @@ test("warehouses: create, edit, delete, record stock movement", async ({ page })
   await page.locator("#mprod").selectOption({ index: 1 });
   await page.locator("#mqty").fill("5");
   await page.locator("#mref").fill(`E2E-MOVE-${stamp}`);
-  await page.getByRole("dialog").getByRole("button", { name: /save|record/i }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /save|record/i })
+    .click();
   await expect(page.getByText(`E2E-MOVE-${stamp}`)).toBeVisible();
 });
 
@@ -102,7 +105,9 @@ const tradeKinds = [
 ];
 
 for (const t of tradeKinds) {
-  test(`${t.path.slice(1)}: create draft, ${t.postable ? "post, " : ""}delete`, async ({ page }) => {
+  test(`${t.path.slice(1)}: create draft, ${t.postable ? "post, " : ""}delete`, async ({
+    page,
+  }) => {
     await open(page, t.path, new RegExp(`new ${t.single}`, "i"));
     const docNos = async () =>
       (await page.locator("tbody tr td:first-child button").allInnerTexts()).map((s) => s.trim());
@@ -115,7 +120,9 @@ for (const t of tradeKinds) {
       await page.getByLabel("Unit price").first().fill("50");
       await page.getByRole("button", { name: /save draft/i }).click();
       await expect(page.getByRole("dialog")).toHaveCount(0);
-      await expect.poll(async () => (await docNos()).filter((n) => !before.has(n)).length).toBeGreaterThan(0);
+      await expect
+        .poll(async () => (await docNos()).filter((n) => !before.has(n)).length)
+        .toBeGreaterThan(0);
       return (await docNos()).find((n) => !before.has(n))!;
     };
 

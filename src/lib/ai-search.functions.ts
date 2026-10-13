@@ -35,7 +35,9 @@ const schema = {
 export const askRecords = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ companyId: z.string().uuid(), question: z.string().trim().min(3).max(500) }).parse(d),
+    z
+      .object({ companyId: z.string().uuid(), question: z.string().trim().min(3).max(500) })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<SearchResult> => {
     const sb = context.supabase as any;
@@ -49,10 +51,24 @@ export const askRecords = createServerFn({ method: "POST" })
 
     const cid = data.companyId;
     const [docs, partners, products, journals] = await Promise.all([
-      sb.from("trade_documents").select("id,kind,doc_no,doc_date,due_date,status,total,notes,partner_id").eq("company_id", cid).order("doc_date", { ascending: false }).limit(150),
+      sb
+        .from("trade_documents")
+        .select("id,kind,doc_no,doc_date,due_date,status,total,notes,partner_id")
+        .eq("company_id", cid)
+        .order("doc_date", { ascending: false })
+        .limit(150),
       sb.from("partners").select("id,kind,name,email,tax_id").eq("company_id", cid).limit(150),
-      sb.from("products").select("id,sku,name,sale_price,cost_price").eq("company_id", cid).limit(150),
-      sb.from("journal_entries").select("id,entry_no,entry_date,status,memo,reference").eq("company_id", cid).order("entry_date", { ascending: false }).limit(150),
+      sb
+        .from("products")
+        .select("id,sku,name,sale_price,cost_price")
+        .eq("company_id", cid)
+        .limit(150),
+      sb
+        .from("journal_entries")
+        .select("id,entry_no,entry_date,status,memo,reference")
+        .eq("company_id", cid)
+        .order("entry_date", { ascending: false })
+        .limit(150),
     ]);
     const pName = new Map<string, string>((partners.data ?? []).map((p: any) => [p.id, p.name]));
 
@@ -63,25 +79,44 @@ export const askRecords = createServerFn({ method: "POST" })
       lines.push(`[${ref}] ${text}`);
     };
     (docs.data ?? []).forEach((d: any, i: number) =>
-      add(`D${i}`, { type: d.kind, id: d.id, label: d.doc_no },
-        `${d.kind} ${d.doc_no} date=${d.doc_date} due=${d.due_date ?? "-"} status=${d.status} total=${d.total} partner=${pName.get(d.partner_id) ?? "-"} notes=${d.notes ?? ""}`),
+      add(
+        `D${i}`,
+        { type: d.kind, id: d.id, label: d.doc_no },
+        `${d.kind} ${d.doc_no} date=${d.doc_date} due=${d.due_date ?? "-"} status=${d.status} total=${d.total} partner=${pName.get(d.partner_id) ?? "-"} notes=${d.notes ?? ""}`,
+      ),
     );
     (partners.data ?? []).forEach((p: any, i: number) =>
-      add(`P${i}`, { type: "partner", id: p.id, label: p.name }, `${p.kind} ${p.name} email=${p.email ?? "-"} tax=${p.tax_id ?? "-"}`),
+      add(
+        `P${i}`,
+        { type: "partner", id: p.id, label: p.name },
+        `${p.kind} ${p.name} email=${p.email ?? "-"} tax=${p.tax_id ?? "-"}`,
+      ),
     );
     (products.data ?? []).forEach((p: any, i: number) =>
-      add(`R${i}`, { type: "product", id: p.id, label: `${p.sku} ${p.name}` }, `product ${p.sku} ${p.name} price=${p.sale_price} cost=${p.cost_price}`),
+      add(
+        `R${i}`,
+        { type: "product", id: p.id, label: `${p.sku} ${p.name}` },
+        `product ${p.sku} ${p.name} price=${p.sale_price} cost=${p.cost_price}`,
+      ),
     );
     (journals.data ?? []).forEach((j: any, i: number) =>
-      add(`J${i}`, { type: "journal", id: j.id, label: j.entry_no }, `journal ${j.entry_no} date=${j.entry_date} status=${j.status} memo=${j.memo ?? ""} ref=${j.reference ?? ""}`),
+      add(
+        `J${i}`,
+        { type: "journal", id: j.id, label: j.entry_no },
+        `journal ${j.entry_no} date=${j.entry_date} status=${j.status} memo=${j.memo ?? ""} ref=${j.reference ?? ""}`,
+      ),
     );
 
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("AI search is not configured");
 
     const res = await fetch(GATEWAY, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, "X-Lovable-AIG-SDK": "fetch" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+        "X-Lovable-AIG-SDK": "fetch",
+      },
       body: JSON.stringify({
         model: MODEL,
         stream: true,
@@ -95,8 +130,10 @@ export const askRecords = createServerFn({ method: "POST" })
     });
     if (!res.ok || !res.body) {
       const msg = await res.text().catch(() => "");
-      if (res.status === 429) throw new Error("AI search is busy right now. Please try again in a moment.");
-      if (res.status === 402) throw new Error("AI credits are used up. Add credits to keep using AI search.");
+      if (res.status === 429)
+        throw new Error("AI search is busy right now. Please try again in a moment.");
+      if (res.status === 402)
+        throw new Error("AI credits are used up. Add credits to keep using AI search.");
       throw new Error(`AI search failed (${res.status}) ${msg.slice(0, 200)}`);
     }
 
@@ -119,7 +156,11 @@ export const askRecords = createServerFn({ method: "POST" })
         try {
           const ev = JSON.parse(payload);
           if (ev.type === "response.output_text.delta") out += ev.delta;
-          if (ev.type === "response.refusal.delta" || ev.type === "error" || ev.type === "response.failed")
+          if (
+            ev.type === "response.refusal.delta" ||
+            ev.type === "error" ||
+            ev.type === "response.failed"
+          )
             throw new Error(ev.error?.message ?? "The AI could not answer this question.");
         } catch (e) {
           if (e instanceof SyntaxError) continue;
