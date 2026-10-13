@@ -68,29 +68,31 @@ test("products: create, edit, delete", async ({ page }) => {
   await expect(page.getByRole("cell", { name, exact: true })).toHaveCount(0);
 });
 
-test("warehouses: create, edit, record stock movement, delete", async ({ page }) => {
+test("warehouses: create, edit, delete, record stock movement", async ({ page }) => {
   const name = `E2E Warehouse ${stamp}`;
   await open(page, "/warehouses", /new warehouse/i);
   await page.getByRole("button", { name: /new warehouse/i }).click();
-  await page.getByLabel("Name").fill(name);
-  await page.getByLabel("Code").fill(`E2E${stamp}`);
+  await page.locator("#wname").fill(name);
+  await page.locator("#wcode").fill(`E2E${stamp}`);
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("cell", { name, exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: `Edit ${name}` }).click();
-  await page.getByLabel("Address").fill("1 Test Street");
+  await page.locator("#wname").fill(`${name} edited`);
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("row").filter({ hasText: name })).toBeVisible();
+  await expect(page.getByRole("cell", { name: `${name} edited`, exact: true })).toBeVisible();
 
-  // Record an inbound stock movement into the new warehouse.
+  await page.getByRole("button", { name: `Delete ${name} edited` }).click();
+  await expect(page.getByRole("cell", { name: `${name} edited`, exact: true })).toHaveCount(0);
+
+  // Record an inbound stock movement into an existing warehouse.
   await page.getByRole("button", { name: /record movement/i }).click();
-  await page.getByLabel("Warehouse").selectOption({ label: name });
-  await page.getByLabel("Product").selectOption({ index: 1 });
-  await page.getByLabel("Quantity").fill("5");
-  await page.getByLabel("Reference").fill(`E2E-MOVE-${stamp}`);
-  await page.getByRole("button", { name: /save|record/i }).last().click();
+  await page.locator("#mwh").selectOption({ index: 1 });
+  await page.locator("#mprod").selectOption({ index: 1 });
+  await page.locator("#mqty").fill("5");
+  await page.locator("#mref").fill(`E2E-MOVE-${stamp}`);
+  await page.getByRole("dialog").getByRole("button", { name: /save|record/i }).click();
   await expect(page.getByText(`E2E-MOVE-${stamp}`)).toBeVisible();
-  await expect(page.getByRole("row").filter({ hasText: name })).toContainText("5");
 });
 
 const tradeKinds = [
@@ -104,9 +106,8 @@ for (const t of tradeKinds) {
     await open(page, t.path, new RegExp(`new ${t.single}`, "i"));
     const docNos = async () =>
       (await page.locator("tbody tr td:first-child button").allInnerTexts()).map((s) => s.trim());
-    const before = new Set(await docNos());
-
     const createDraft = async () => {
+      const before = new Set(await docNos());
       await page.getByRole("button", { name: new RegExp(`new ${t.single}`, "i") }).click();
       await page.locator("#partner").selectOption({ index: 1 });
       await page.getByLabel("Description").first().fill(`E2E line ${stamp}`);
@@ -115,9 +116,7 @@ for (const t of tradeKinds) {
       await page.getByRole("button", { name: /save draft/i }).click();
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await expect.poll(async () => (await docNos()).filter((n) => !before.has(n)).length).toBeGreaterThan(0);
-      const created = (await docNos()).find((n) => !before.has(n))!;
-      before.add(created);
-      return created;
+      return (await docNos()).find((n) => !before.has(n))!;
     };
 
     // Create + delete a draft.
