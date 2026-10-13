@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const title = "Ask your books · Pro Max Accounting ERP";
-const description = "Search invoices, customers, products and journal entries with a plain-language question.";
+const description =
+  "Search invoices, customers, products and journal entries with a plain-language question.";
 
 export const Route = createFileRoute("/_authenticated/ask")({
   head: () => ({
@@ -67,19 +68,33 @@ function AskPage() {
           onChange={(e) => setQ(e.target.value)}
         />
         <Button type="submit" disabled={run.isPending || q.trim().length < 3}>
-          {run.isPending ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+          {run.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Search className="size-4" />
+          )}
           Ask
         </Button>
       </form>
       <div className="mt-3 flex flex-wrap gap-2">
         {examples.map((ex) => (
-          <Button key={ex} variant="outline" size="sm" onClick={() => { setQ(ex); submit(ex); }}>
+          <Button
+            key={ex}
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setQ(ex);
+              submit(ex);
+            }}
+          >
             {ex}
           </Button>
         ))}
       </div>
 
-      {run.isPending && <p className="mt-8 text-sm text-muted-foreground">Searching your records…</p>}
+      {run.isPending && (
+        <p className="mt-8 text-sm text-muted-foreground">Searching your records…</p>
+      )}
       {run.error && <p className="mt-8 text-sm text-destructive">{(run.error as Error).message}</p>}
       {run.data && !run.isPending && (
         <div className="mt-8 space-y-4">
@@ -95,7 +110,10 @@ function AskPage() {
                     <p className="font-medium">{h.label}</p>
                     <p className="text-sm text-muted-foreground">{h.reason}</p>
                   </div>
-                  <Link to={linkFor[h.type]} className="shrink-0 text-xs capitalize text-primary hover:underline">
+                  <Link
+                    to={linkFor[h.type]}
+                    className="shrink-0 text-xs capitalize text-primary hover:underline"
+                  >
                     {h.type.replace("_", " ")} →
                   </Link>
                 </li>

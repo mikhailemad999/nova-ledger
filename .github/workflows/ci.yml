@@ -14,6 +14,9 @@ jobs:
   quality:
     name: Lint, typecheck & test
     runs-on: ubuntu-latest
+    env:
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +51,16 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      - name: Browser form tests
+        if: ${{ env.E2E_EMAIL != '' }}
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          bunx playwright install --with-deps chromium
+          (bun run dev --port 8080 &) && npx wait-on -t 120000 http://localhost:8080
+          bun run test:e2e
 
   docker:
     name: Docker image build
