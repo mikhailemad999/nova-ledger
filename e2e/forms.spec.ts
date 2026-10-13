@@ -12,9 +12,9 @@ test.skip(!email || !password, "E2E_EMAIL / E2E_PASSWORD not set");
 const stamp = Date.now().toString().slice(-6);
 
 async function signIn(page: Page) {
-  await page.goto("/auth");
-  await page.getByLabel("Email").fill(email!);
-  await page.getByLabel("Password", { exact: true }).fill(password!);
+  await page.goto("/auth", { waitUntil: "networkidle" });
+  await page.locator("#email").fill(email!);
+  await page.locator("#password").fill(password!);
   await page.getByRole("button", { name: /^sign in$/i }).click();
   await page.waitForURL(/dashboard/, { timeout: 30_000 });
 }
