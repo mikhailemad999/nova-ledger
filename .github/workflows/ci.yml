@@ -14,6 +14,9 @@ jobs:
   quality:
     name: Lint, typecheck & test
     runs-on: ubuntu-latest
+    env:
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -50,10 +53,8 @@ jobs:
         run: bun run build
 
       - name: Browser form tests
-        if: ${{ secrets.E2E_EMAIL != '' }}
+        if: ${{ env.E2E_EMAIL != '' }}
         env:
-          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
-          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
