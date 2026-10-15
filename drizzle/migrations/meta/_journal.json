@@ -8,6 +8,13 @@
       "when": 1791133722447,
       "tag": "0000_confirm_existing_users",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792073151516,
+      "tag": "0001_protect_posted_trade_documents",
+      "breakpoints": true
     }
   ]
 }
