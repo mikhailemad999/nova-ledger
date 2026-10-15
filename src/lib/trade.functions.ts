@@ -42,7 +42,7 @@ export const listTradeDocuments = createServerFn({ method: "POST" })
     const { data: rows, error } = await ctx.supabase
       .from("trade_documents")
       .select(
-        "id, doc_no, doc_date, due_date, status, notes, subtotal, tax_total, total, journal_entry_id, partners(name), branches(name), trade_document_lines(id, description, quantity, unit_price, tax_rate, line_total, products(sku, name))",
+        "id, doc_no, doc_date, due_date, status, notes, subtotal, tax_total, total, journal_entry_id, partner_id, partners(name), branches(name), trade_document_lines(id, product_id, description, quantity, unit_price, tax_rate, line_total, products(sku, name))",
       )
       .eq("company_id", data.companyId)
       .eq("kind", data.kind)
@@ -55,6 +55,7 @@ export const listTradeDocuments = createServerFn({ method: "POST" })
       branch_name: r.branches?.name ?? null,
       lines: (r.trade_document_lines ?? []).map((l: any) => ({
         id: l.id,
+        product_id: l.product_id ?? null,
         description: l.description ?? l.products?.name ?? "—",
         sku: l.products?.sku ?? null,
         quantity: Number(l.quantity),
@@ -149,6 +150,83 @@ export const createTradeDocument = createServerFn({ method: "POST" })
       throw new Error(lineError.message);
     }
     return { id: doc.id, docNo: doc.doc_no };
+  });
+
+/** Edits a draft document: replaces its header fields and lines. Posted documents are refused. */
+export const updateTradeDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    companyInput
+      .extend({
+        id: z.string().uuid(),
+        partnerId: z.string().uuid().nullable().optional(),
+        docDate: z.string().min(8),
+        dueDate: z.string().min(8).nullable().optional(),
+        notes: z.string().max(400).nullable().optional(),
+        lines: z.array(docLine).min(1),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const ctx = context as Ctx;
+    await requireCompanyPermission(ctx, data.companyId, "sales.manage");
+
+    const { data: existing, error: findError } = await ctx.supabase
+      .from("trade_documents")
+      .select("id, status, doc_no")
+      .eq("id", data.id)
+      .eq("company_id", data.companyId)
+      .maybeSingle();
+    if (findError) throw new Error(findError.message);
+    if (!existing) throw new Error("Document not found");
+    if (existing.status === "posted") throw new Error("Posted documents cannot be edited");
+
+    const computed = data.lines.map((l) => {
+      const net = l.quantity * l.unitPrice;
+      return { ...l, net, tax: (net * l.taxRate) / 100 };
+    });
+    const subtotal = computed.reduce((s, l) => s + l.net, 0);
+    const taxTotal = computed.reduce((s, l) => s + l.tax, 0);
+
+    const { data: updated, error } = await ctx.supabase
+      .from("trade_documents")
+      .update({
+        partner_id: data.partnerId ?? null,
+        doc_date: data.docDate,
+        due_date: data.dueDate || null,
+        notes: data.notes || null,
+        subtotal: Math.round(subtotal * 100) / 100,
+        tax_total: Math.round(taxTotal * 100) / 100,
+        total: Math.round((subtotal + taxTotal) * 100) / 100,
+      })
+      .eq("id", data.id)
+      .eq("company_id", data.companyId)
+      .neq("status", "posted")
+      .select("id");
+    if (error) throw new Error(error.message);
+    if (!updated?.length) throw new Error("Document could not be updated");
+
+    const { error: delError } = await ctx.supabase
+      .from("trade_document_lines")
+      .delete()
+      .eq("document_id", data.id)
+      .eq("company_id", data.companyId);
+    if (delError) throw new Error(delError.message);
+
+    const { error: lineError } = await ctx.supabase.from("trade_document_lines").insert(
+      computed.map((l) => ({
+        document_id: data.id,
+        company_id: data.companyId,
+        product_id: l.productId ?? null,
+        description: l.description ?? null,
+        quantity: l.quantity,
+        unit_price: l.unitPrice,
+        tax_rate: l.taxRate,
+        line_total: Math.round(l.net * 100) / 100,
+      })),
+    );
+    if (lineError) throw new Error(lineError.message);
+    return { id: data.id, docNo: existing.doc_no };
   });
 
 export const deleteTradeDocument = createServerFn({ method: "POST" })
