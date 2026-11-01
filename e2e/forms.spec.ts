@@ -126,21 +126,36 @@ for (const t of tradeKinds) {
       return (await docNos()).find((n) => !before.has(n))!;
     };
 
-    // Create + delete a draft.
+    // Create a draft, edit it, confirm the edit persists after reload, then delete it.
     const draft = await createDraft();
     const draftRow = page.getByRole("row").filter({ hasText: draft });
     await expect(draftRow).toContainText("draft");
     await expect(draftRow).toContainText("$100.00");
+
+    await page.getByRole("button", { name: `Edit ${draft}` }).click();
+    await expect(page.getByLabel("Description").first()).toHaveValue(`E2E line ${stamp}`);
+    await page.getByLabel("Quantity").first().fill("3");
+    await page.getByLabel("Unit price").first().fill("40");
+    await page.getByRole("button", { name: /save draft/i }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(draftRow).toContainText("$120.00");
+
+    await open(page, t.path, new RegExp(`new ${t.single}`, "i"));
+    const reloaded = page.getByRole("row").filter({ hasText: draft });
+    await expect(reloaded).toContainText("$120.00");
+    await expect(reloaded).toContainText("draft");
+
     await page.getByRole("button", { name: `Delete ${draft}` }).click();
     await expect(page.getByRole("row").filter({ hasText: draft })).toHaveCount(0);
 
     if (t.postable) {
-      // Create + post: becomes "posted" and can no longer be deleted.
+      // Create + post: becomes "posted" and can no longer be edited or deleted.
       const toPost = await createDraft();
       const row = page.getByRole("row").filter({ hasText: toPost });
       await row.getByRole("button", { name: /post/i }).click();
       await expect(row).toContainText("posted", { timeout: 20_000 });
       await expect(page.getByRole("button", { name: `Delete ${toPost}` })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: `Edit ${toPost}` })).toHaveCount(0);
     }
   });
 }
