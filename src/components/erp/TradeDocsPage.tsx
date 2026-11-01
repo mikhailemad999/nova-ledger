@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronDown, ChevronRight, Loader2, Plus, Send, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2, Pencil, Plus, Send, Trash2 } from "lucide-react";
 import { AppShell } from "./AppShell";
 import { useTenant } from "@/hooks/useTenant";
 import { can } from "@/lib/rbac";
@@ -12,6 +12,7 @@ import {
   deleteTradeDocument,
   listTradeDocuments,
   postTradeDocument,
+  updateTradeDocument,
 } from "@/lib/trade.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,8 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
   const addDoc = useServerFn(createTradeDocument);
   const postDoc = useServerFn(postTradeDocument);
   const removeDoc = useServerFn(deleteTradeDocument);
+  const editDoc = useServerFn(updateTradeDocument);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const canWrite = can(tenant.role, "sales.manage");
   const canPost = can(tenant.role, "accounting.post");
@@ -90,6 +93,8 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
   });
 
   const reset = () => {
+    setEditingId(null);
+    setDocDate(new Date().toISOString().slice(0, 10));
     setPartnerId("");
     setDueDate("");
     setNotes("");
@@ -97,13 +102,9 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
   };
 
   const save = useMutation({
-    mutationFn: () =>
-      addDoc({
-        data: {
-          companyId: companyId!,
-          kind,
-          branchId: tenant.branch?.id ?? null,
-          partnerId: partnerId || null,
+    mutationFn: () => {
+      const payload = {
+        partnerId: partnerId || null,
           docDate,
           dueDate: dueDate || null,
           notes: notes || null,
@@ -114,10 +115,15 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
             unitPrice: Number(l.unitPrice),
             taxRate: Number(l.taxRate),
           })),
-        },
-      }),
+      };
+      return editingId
+        ? editDoc({ data: { companyId: companyId!, id: editingId, ...payload } })
+        : addDoc({
+            data: { companyId: companyId!, kind, branchId: tenant.branch?.id ?? null, ...payload },
+          });
+    },
     onSuccess: (r: any) => {
-      toast.success(`${r.docNo} created`);
+      toast.success(`${r.docNo} ${editingId ? "updated" : "created"}`);
       setOpen(false);
       reset();
       queryClient.invalidateQueries({ queryKey: key });
@@ -143,6 +149,24 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const startEdit = (d: any) => {
+    setEditingId(d.id);
+    setPartnerId(d.partner_id ?? "");
+    setDocDate(d.doc_date);
+    setDueDate(d.due_date ?? "");
+    setNotes(d.notes ?? "");
+    setLines(
+      d.lines.map((l: any) => ({
+        productId: l.product_id ?? "",
+        description: l.description === "—" ? "" : l.description,
+        quantity: l.quantity,
+        unitPrice: l.unit_price,
+        taxRate: l.tax_rate,
+      })),
+    );
+    setOpen(true);
+  };
 
   const rows = data ?? [];
   const subtotal = lines.reduce((s, l) => s + Number(l.quantity) * Number(l.unitPrice), 0);
@@ -254,6 +278,16 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
                         <Send className="mr-1 size-4" /> Post
                       </Button>
                     )}
+                    {canWrite && d.status !== "posted" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Edit ${d.doc_no}`}
+                        onClick={() => startEdit(d)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                    )}
                     {canDelete && d.status !== "posted" && (
                       <Button
                         variant="ghost"
@@ -304,10 +338,18 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
         </table>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) reset();
+        }}
+      >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>New {meta.single}</DialogTitle>
+            <DialogTitle>
+              {editingId ? `Edit ${meta.single}` : `New ${meta.single}`}
+            </DialogTitle>
           </DialogHeader>
           <form
             className="space-y-4"
