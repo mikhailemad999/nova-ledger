@@ -9,8 +9,8 @@ type Props = {
   onRetry: () => void;
   retrying?: boolean;
   /** Optional secondary escape hatch, e.g. "Sign in again" when the session is stale. */
-  secondaryTo?: string;
-  secondaryLabel?: string;
+  secondaryTo?: string | undefined;
+  secondaryLabel?: string | undefined;
   className?: string;
 };
 
@@ -45,7 +45,11 @@ export function ConnectionRetry({
       ) : null}
       <div className="mt-2 flex items-center gap-3">
         <Button onClick={onRetry} disabled={retrying}>
-          {retrying ? <Loader2 className="mr-2 size-4 animate-spin" /> : <RefreshCw className="mr-2 size-4" />}
+          {retrying ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 size-4" />
+          )}
           {retrying ? "Retrying…" : "Try again"}
         </Button>
         {secondaryTo ? (

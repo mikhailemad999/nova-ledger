@@ -3,6 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Gauge, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { describeConnectionError, isConnectionError } from "@/lib/connection";
+import { ConnectionRetry } from "@/components/erp/ConnectionRetry";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +36,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -41,9 +44,9 @@ function AuthPage() {
     });
   }, [navigate]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit() {
     setBusy(true);
+    setConnectionError(null);
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -73,24 +76,41 @@ function AuthPage() {
         toast.success("Password reset link sent");
       }
     } catch (err) {
+      // A paused / unreachable backend is retryable — show the retry panel, not a dead-end toast.
+      if (isConnectionError(err)) {
+        setConnectionError(describeConnectionError(err));
+        return;
+      }
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBusy(false);
     }
   }
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    void submit();
+  }
+
   async function handleGoogle() {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
+    setConnectionError(null);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setBusy(false);
+        toast.error("Google sign-in failed");
+        return;
+      }
+      if (result.redirected) return;
+      navigate({ to: "/dashboard", replace: true });
+    } catch (err) {
       setBusy(false);
-      toast.error("Google sign-in failed");
-      return;
+      if (isConnectionError(err)) setConnectionError(describeConnectionError(err));
+      else toast.error("Google sign-in failed");
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
   }
 
   return (
@@ -126,52 +146,63 @@ function AuthPage() {
               : "Access your companies, branches and ledgers."}
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-            {mode === "register" && (
+          {connectionError ? (
+            <ConnectionRetry
+              className="flex flex-col items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-6 text-center"
+              title="Can't reach the service"
+              message="Your sign-in could not complete — the service may be paused or offline. Try again in a moment."
+              detail={connectionError}
+              onRetry={() => void submit()}
+              retrying={busy}
+            />
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              {mode === "register" && (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full name</Label>
+                  <Input
+                    id="fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full name</Label>
+                <Label htmlFor="email">Work email</Label>
                 <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Work email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            {mode !== "reset" && (
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-            <Button type="submit" className="w-full" disabled={busy}>
-              {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {mode === "login"
-                ? "Sign in"
-                : mode === "register"
-                  ? "Create account"
-                  : "Send reset link"}
-            </Button>
-          </form>
+              {mode !== "reset" && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              <Button type="submit" className="w-full" disabled={busy}>
+                {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
+                {mode === "login"
+                  ? "Sign in"
+                  : mode === "register"
+                    ? "Create account"
+                    : "Send reset link"}
+              </Button>
+            </form>
+          )}
 
           {mode !== "reset" && (
             <>

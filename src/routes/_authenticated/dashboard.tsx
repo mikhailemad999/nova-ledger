@@ -25,8 +25,14 @@ import {
   Wallet,
 } from "lucide-react";
 import { AppShell } from "@/components/erp/AppShell";
+import { ConnectionRetry } from "@/components/erp/ConnectionRetry";
 import { useTenant } from "@/hooks/useTenant";
 import { getDashboardMetrics } from "@/lib/accounting.functions";
+import {
+  describeConnectionError,
+  isConnectionError,
+  retryOnConnectionError,
+} from "@/lib/connection";
 
 const title = "Dashboard · Pro Max Accounting ERP";
 const description =
@@ -52,11 +58,19 @@ function Dashboard() {
   const currency = tenant.company?.currency ?? "USD";
   const fetchMetrics = useServerFn(getDashboardMetrics);
 
-  const { data, isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    error: metricsError,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ["metrics", companyId, tenant.branch?.id ?? null],
     enabled: Boolean(companyId),
     queryFn: () =>
       fetchMetrics({ data: { companyId: companyId!, branchId: tenant.branch?.id ?? null } }),
+    ...retryOnConnectionError,
   });
 
   const fmt = (n: number) =>
@@ -65,6 +79,24 @@ function Dashboard() {
       currency,
       maximumFractionDigits: 0,
     }).format(n);
+
+  if (isError) {
+    return (
+      <AppShell title="Dashboard">
+        <ConnectionRetry
+          title="Can't load your figures"
+          message={
+            isConnectionError(metricsError)
+              ? "Your dashboard figures could not be loaded — the service may be paused or offline. Try again in a moment."
+              : "Your dashboard figures could not be loaded."
+          }
+          detail={describeConnectionError(metricsError)}
+          onRetry={() => void refetch()}
+          retrying={isFetching}
+        />
+      </AppShell>
+    );
+  }
 
   if (isLoading || !data) {
     return (

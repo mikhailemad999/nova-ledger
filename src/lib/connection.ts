@@ -33,3 +33,9 @@ export function isConnectionError(error: unknown): boolean {
 export function describeConnectionError(error: unknown): string {
   return error instanceof Error ? error.message : String(error ?? "Unknown error");
 }
+
+/** React Query options: auto-retry only transient connection failures, with a short backoff. */
+export const retryOnConnectionError = {
+  retry: (failureCount: number, error: unknown) => isConnectionError(error) && failureCount < 2,
+  retryDelay: (attempt: number) => Math.min(1000 * 2 ** attempt, 4000),
+};

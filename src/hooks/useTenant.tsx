@@ -10,6 +10,12 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyWorkspace, switchTenant } from "@/lib/tenant.functions";
+import {
+  describeConnectionError,
+  isConnectionError,
+  retryOnConnectionError,
+} from "@/lib/connection";
+import { ConnectionRetry } from "@/components/erp/ConnectionRetry";
 import type { AppRole } from "@/lib/rbac";
 
 const COMPANY_KEY = "erp.activeCompany";
@@ -46,10 +52,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [branchId, setBranchId] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const workspaceQuery = useQuery({
     queryKey: ["workspace"],
     queryFn: () => fetchWorkspace({}),
+    ...retryOnConnectionError,
   });
+  const { data, isLoading } = workspaceQuery;
+  const workspaceError = workspaceQuery.error ?? null;
+  const connectionLost = workspaceError !== null && isConnectionError(workspaceError);
 
   useEffect(() => {
     setCompanyId(localStorage.getItem(COMPANY_KEY));
@@ -99,8 +109,39 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setBranch,
       refresh: () => queryClient.invalidateQueries({ queryKey: ["workspace"] }),
     }),
-    [isLoading, data, companies, branches, company, branch, setCompany, setBranch, queryClient],
+    [
+      isLoading,
+      data,
+      companies,
+      branches,
+      company,
+      branch,
+      setCompany,
+      setBranch,
+      queryClient,
+      workspaceError,
+      workspaceQuery.isFetching,
+    ],
   );
+
+  if (workspaceError) {
+    return (
+      <TenantContext.Provider value={value}>
+        <ConnectionRetry
+          title={connectionLost ? "Can't reach your workspace" : "Couldn't load your workspace"}
+          message={
+            connectionLost
+              ? "Your companies could not be loaded — the service may be paused or offline. Try again in a moment."
+              : "Your companies could not be loaded."
+          }
+          detail={describeConnectionError(workspaceError)}
+          onRetry={() => void workspaceQuery.refetch()}
+          retrying={workspaceQuery.isFetching}
+          secondaryTo={connectionLost ? undefined : "/auth"}
+        />
+      </TenantContext.Provider>
+    );
+  }
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 }

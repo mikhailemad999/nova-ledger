@@ -5,9 +5,9 @@ describe("isConnectionError", () => {
   it("detects browser fetch failures", () => {
     expect(isConnectionError(new TypeError("Failed to fetch"))).toBe(true);
     expect(isConnectionError(new Error("fetch failed"))).toBe(true);
-    expect(isConnectionError(new TypeError("NetworkError when attempting to fetch resource."))).toBe(
-      true,
-    );
+    expect(
+      isConnectionError(new TypeError("NetworkError when attempting to fetch resource.")),
+    ).toBe(true);
   });
 
   it("detects paused-backend status codes like 530", () => {
