@@ -582,6 +582,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["trade_doc_kind"]
           notes: string | null
           partner_id: string | null
+          request_id: string | null
           status: Database["public"]["Enums"]["trade_doc_status"]
           subtotal: number
           tax_total: number
@@ -601,6 +602,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["trade_doc_kind"]
           notes?: string | null
           partner_id?: string | null
+          request_id?: string | null
           status?: Database["public"]["Enums"]["trade_doc_status"]
           subtotal?: number
           tax_total?: number
@@ -620,6 +622,7 @@ export type Database = {
           kind?: Database["public"]["Enums"]["trade_doc_kind"]
           notes?: string | null
           partner_id?: string | null
+          request_id?: string | null
           status?: Database["public"]["Enums"]["trade_doc_status"]
           subtotal?: number
           tax_total?: number

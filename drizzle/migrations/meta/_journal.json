@@ -15,6 +15,13 @@
       "when": 1792073151516,
       "tag": "0001_protect_posted_trade_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793958058750,
+      "tag": "0002_trade_document_create_idempotency",
+      "breakpoints": true
     }
   ]
 }
