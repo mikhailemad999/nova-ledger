@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronDown, ChevronRight, Loader2, Pencil, Plus, Send, Trash2 } from "lucide-react";
@@ -55,6 +55,7 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
   const removeDoc = useServerFn(deleteTradeDocument);
   const editDoc = useServerFn(updateTradeDocument);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const createRequestId = useRef<string | null>(null);
 
   const canWrite = can(tenant.role, "sales.manage");
   const canPost = can(tenant.role, "accounting.post");
@@ -94,6 +95,7 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
 
   const reset = () => {
     setEditingId(null);
+    createRequestId.current = null;
     setDocDate(new Date().toISOString().slice(0, 10));
     setPartnerId("");
     setDueDate("");
@@ -116,11 +118,19 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
             taxRate: Number(l.taxRate),
           })),
       };
-      return editingId
-        ? editDoc({ data: { companyId: companyId!, id: editingId, ...payload } })
-        : addDoc({
-            data: { companyId: companyId!, kind, branchId: tenant.branch?.id ?? null, ...payload },
-          });
+      if (editingId) {
+        return editDoc({ data: { companyId: companyId!, id: editingId, ...payload } });
+      }
+      createRequestId.current ??= crypto.randomUUID();
+      return addDoc({
+        data: {
+          companyId: companyId!,
+          kind,
+          branchId: tenant.branch?.id ?? null,
+          requestId: createRequestId.current,
+          ...payload,
+        },
+      });
     },
     onSuccess: (r: any) => {
       toast.success(`${r.docNo} ${editingId ? "updated" : "created"}`);
@@ -514,8 +524,15 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
               <span className="num font-semibold">{money(subtotal + taxTotal)}</span>
             </div>
 
+            {save.isError && (
+              <p role="alert" className="text-sm text-destructive">
+                Save didn’t complete. Your entries are still here; retry when connected.
+              </p>
+            )}
+
             <Button type="submit" className="w-full" disabled={save.isPending}>
-              {save.isPending && <Loader2 className="mr-2 size-4 animate-spin" />} Save draft
+              {save.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {save.isError ? "Retry save" : "Save draft"}
             </Button>
           </form>
         </DialogContent>

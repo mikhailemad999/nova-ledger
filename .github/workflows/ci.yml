@@ -20,6 +20,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify required test secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          TEST_USER_A_EMAIL: ${{ secrets.TEST_USER_A_EMAIL }}
+          TEST_USER_A_PASSWORD: ${{ secrets.TEST_USER_A_PASSWORD }}
+          TEST_USER_B_EMAIL: ${{ secrets.TEST_USER_B_EMAIL }}
+          TEST_USER_B_PASSWORD: ${{ secrets.TEST_USER_B_PASSWORD }}
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+        run: |
+          required_secrets="SUPABASE_URL SUPABASE_PUBLISHABLE_KEY TEST_USER_A_EMAIL TEST_USER_A_PASSWORD TEST_USER_B_EMAIL TEST_USER_B_PASSWORD E2E_EMAIL E2E_PASSWORD"
+          missing_secrets=""
+          for secret_name in $required_secrets; do
+            if [ -z "${!secret_name}" ]; then
+              missing_secrets="${missing_secrets} ${secret_name}"
+            fi
+          done
+          if [ -n "$missing_secrets" ]; then
+            echo "Required GitHub Actions secrets are missing:${missing_secrets}"
+            echo "See the README section 'GitHub Actions test secrets' for setup instructions."
+            exit 1
+          fi
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -42,18 +66,12 @@ jobs:
           TEST_USER_A_PASSWORD: ${{ secrets.TEST_USER_A_PASSWORD }}
           TEST_USER_B_EMAIL: ${{ secrets.TEST_USER_B_EMAIL }}
           TEST_USER_B_PASSWORD: ${{ secrets.TEST_USER_B_PASSWORD }}
-        run: |
-          if node -e "process.exit(require('./package.json').scripts?.test ? 0 : 1)"; then
-            bun run test
-          else
-            echo "No test script defined — skipping."
-          fi
+        run: bun run test
 
       - name: Build
         run: bun run build
 
-      - name: Browser form tests
-        if: ${{ env.E2E_EMAIL != '' }}
+      - name: Browser form and outage-recovery tests
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}

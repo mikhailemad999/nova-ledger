@@ -720,6 +720,23 @@ export type Database = {
         Args: { _company_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      create_trade_document_draft: {
+        Args: {
+          p_branch_id: string
+          p_company_id: string
+          p_doc_date: string
+          p_due_date: string
+          p_kind: Database["public"]["Enums"]["trade_doc_kind"]
+          p_lines: Json
+          p_notes: string
+          p_partner_id: string
+          p_request_id: string
+        }
+        Returns: {
+          doc_no: string
+          id: string
+        }[]
+      }
       has_company_role: {
         Args: {
           _company_id: string
@@ -743,6 +760,21 @@ export type Database = {
       seed_company_trade: {
         Args: { _company_id: string; _user_id: string }
         Returns: undefined
+      }
+      update_trade_document_draft: {
+        Args: {
+          p_company_id: string
+          p_doc_date: string
+          p_document_id: string
+          p_due_date: string
+          p_lines: Json
+          p_notes: string
+          p_partner_id: string
+        }
+        Returns: {
+          doc_no: string
+          id: string
+        }[]
       }
     }
     Enums: {

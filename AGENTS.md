@@ -11,3 +11,4 @@
 - AI record search runs in a server function (src/lib/ai-search.functions.ts) that reads records through the caller's RLS client and streams the Gateway Responses API — keeps tenant isolation and the API key server-side.
 - Browser form tests live in e2e/ (Playwright, `bun run test:e2e`), unit/live API tests in src/ and tests/ (Vitest) — vitest.config.ts restricts includes so the two runners never collide.
 - Posted trade documents and their lines are locked by database triggers (protect_posted_trade_*) — the app's checks are not the only guard.
+- Trade-document drafts must be saved atomically; creates use a stable request ID so a lost response can be retried without duplicates or discarding later edits.

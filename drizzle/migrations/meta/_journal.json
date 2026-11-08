@@ -22,6 +22,13 @@
       "when": 1793958058750,
       "tag": "0002_trade_document_create_idempotency",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794176097488,
+      "tag": "0003_atomic_idempotent_trade_document_writes",
+      "breakpoints": true
     }
   ]
 }

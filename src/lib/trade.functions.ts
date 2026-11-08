@@ -27,12 +27,6 @@ async function requireCompanyPermission(
 const companyInput = z.object({ companyId: z.string().uuid() });
 const kindEnum = z.enum(["quotation", "invoice", "purchase_order"]);
 
-const PREFIX: Record<string, string> = {
-  quotation: "QUO",
-  invoice: "INV",
-  purchase_order: "PO",
-};
-
 export const listTradeDocuments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => companyInput.extend({ kind: kindEnum }).parse(d))
@@ -81,6 +75,7 @@ export const createTradeDocument = createServerFn({ method: "POST" })
       .extend({
         kind: kindEnum,
         branchId: z.string().uuid().nullable().optional(),
+        requestId: z.string().uuid(),
         partnerId: z.string().uuid().nullable().optional(),
         docDate: z.string().min(8),
         dueDate: z.string().min(8).nullable().optional(),
@@ -92,63 +87,26 @@ export const createTradeDocument = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = context as Ctx;
     await requireCompanyPermission(ctx, data.companyId, "sales.manage");
-
-    const computed = data.lines.map((l) => {
-      const net = l.quantity * l.unitPrice;
-      return { ...l, net, tax: (net * l.taxRate) / 100 };
-    });
-    const subtotal = computed.reduce((s, l) => s + l.net, 0);
-    const taxTotal = computed.reduce((s, l) => s + l.tax, 0);
-
-    const { data: last } = await ctx.supabase
-      .from("trade_documents")
-      .select("doc_no")
-      .eq("company_id", data.companyId)
-      .eq("kind", data.kind)
-      .order("doc_no", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    const prefix = PREFIX[data.kind]!;
-    const lastNum = Number(String(last?.doc_no ?? "").split("-")[1] ?? 0);
-    const docNo = `${prefix}-${String((Number.isFinite(lastNum) ? lastNum : 0) + 1).padStart(4, "0")}`;
-
-    const { data: doc, error } = await ctx.supabase
-      .from("trade_documents")
-      .insert({
-        company_id: data.companyId,
-        branch_id: data.branchId ?? null,
-        partner_id: data.partnerId ?? null,
-        kind: data.kind,
-        doc_no: docNo,
-        doc_date: data.docDate,
-        due_date: data.dueDate || null,
-        status: "draft",
-        notes: data.notes || null,
-        subtotal: Math.round(subtotal * 100) / 100,
-        tax_total: Math.round(taxTotal * 100) / 100,
-        total: Math.round((subtotal + taxTotal) * 100) / 100,
-        created_by: ctx.userId,
-      })
-      .select("id, doc_no")
-      .single();
-    if (error) throw new Error(error.message);
-
-    const { error: lineError } = await ctx.supabase.from("trade_document_lines").insert(
-      computed.map((l) => ({
-        document_id: doc.id,
-        company_id: data.companyId,
-        product_id: l.productId ?? null,
-        description: l.description ?? null,
-        quantity: l.quantity,
-        unit_price: l.unitPrice,
-        tax_rate: l.taxRate,
-        line_total: Math.round(l.net * 100) / 100,
+    const { data: docs, error } = await ctx.supabase.rpc("create_trade_document_draft", {
+      p_company_id: data.companyId,
+      p_kind: data.kind,
+      p_branch_id: data.branchId ?? null,
+      p_partner_id: data.partnerId ?? null,
+      p_doc_date: data.docDate,
+      p_due_date: data.dueDate ?? null,
+      p_notes: data.notes ?? null,
+      p_request_id: data.requestId,
+      p_lines: data.lines.map((line) => ({
+        product_id: line.productId ?? null,
+        description: line.description ?? null,
+        quantity: line.quantity,
+        unit_price: line.unitPrice,
+        tax_rate: line.taxRate,
       })),
-    );
-    if (lineError) {
-      await ctx.supabase.from("trade_documents").delete().eq("id", doc.id);
-      throw new Error(lineError.message);
-    }
+    });
+    if (error) throw new Error(error.message);
+    const doc = docs?.[0];
+    if (!doc) throw new Error("The draft could not be saved");
     return { id: doc.id, docNo: doc.doc_no };
   });
 
@@ -171,62 +129,25 @@ export const updateTradeDocument = createServerFn({ method: "POST" })
     const ctx = context as Ctx;
     await requireCompanyPermission(ctx, data.companyId, "sales.manage");
 
-    const { data: existing, error: findError } = await ctx.supabase
-      .from("trade_documents")
-      .select("id, status, doc_no")
-      .eq("id", data.id)
-      .eq("company_id", data.companyId)
-      .maybeSingle();
-    if (findError) throw new Error(findError.message);
-    if (!existing) throw new Error("Document not found");
-    if (existing.status === "posted") throw new Error("Posted documents cannot be edited");
-
-    const computed = data.lines.map((l) => {
-      const net = l.quantity * l.unitPrice;
-      return { ...l, net, tax: (net * l.taxRate) / 100 };
-    });
-    const subtotal = computed.reduce((s, l) => s + l.net, 0);
-    const taxTotal = computed.reduce((s, l) => s + l.tax, 0);
-
-    const { data: updated, error } = await ctx.supabase
-      .from("trade_documents")
-      .update({
-        partner_id: data.partnerId ?? null,
-        doc_date: data.docDate,
-        due_date: data.dueDate || null,
-        notes: data.notes || null,
-        subtotal: Math.round(subtotal * 100) / 100,
-        tax_total: Math.round(taxTotal * 100) / 100,
-        total: Math.round((subtotal + taxTotal) * 100) / 100,
-      })
-      .eq("id", data.id)
-      .eq("company_id", data.companyId)
-      .neq("status", "posted")
-      .select("id");
-    if (error) throw new Error(error.message);
-    if (!updated?.length) throw new Error("Document could not be updated");
-
-    const { error: delError } = await ctx.supabase
-      .from("trade_document_lines")
-      .delete()
-      .eq("document_id", data.id)
-      .eq("company_id", data.companyId);
-    if (delError) throw new Error(delError.message);
-
-    const { error: lineError } = await ctx.supabase.from("trade_document_lines").insert(
-      computed.map((l) => ({
-        document_id: data.id,
-        company_id: data.companyId,
-        product_id: l.productId ?? null,
-        description: l.description ?? null,
-        quantity: l.quantity,
-        unit_price: l.unitPrice,
-        tax_rate: l.taxRate,
-        line_total: Math.round(l.net * 100) / 100,
+    const { data: docs, error } = await ctx.supabase.rpc("update_trade_document_draft", {
+      p_company_id: data.companyId,
+      p_document_id: data.id,
+      p_partner_id: data.partnerId ?? null,
+      p_doc_date: data.docDate,
+      p_due_date: data.dueDate ?? null,
+      p_notes: data.notes ?? null,
+      p_lines: data.lines.map((line) => ({
+        product_id: line.productId ?? null,
+        description: line.description ?? null,
+        quantity: line.quantity,
+        unit_price: line.unitPrice,
+        tax_rate: line.taxRate,
       })),
-    );
-    if (lineError) throw new Error(lineError.message);
-    return { id: data.id, docNo: existing.doc_no };
+    });
+    if (error) throw new Error(error.message);
+    const doc = docs?.[0];
+    if (!doc) throw new Error("The draft could not be updated");
+    return { id: doc.id, docNo: doc.doc_no };
   });
 
 export const deleteTradeDocument = createServerFn({ method: "POST" })
