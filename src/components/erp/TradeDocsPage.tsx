@@ -107,16 +107,16 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
     mutationFn: () => {
       const payload = {
         partnerId: partnerId || null,
-          docDate,
-          dueDate: dueDate || null,
-          notes: notes || null,
-          lines: lines.map((l) => ({
-            productId: l.productId || null,
-            description: l.description || undefined,
-            quantity: Number(l.quantity),
-            unitPrice: Number(l.unitPrice),
-            taxRate: Number(l.taxRate),
-          })),
+        docDate,
+        dueDate: dueDate || null,
+        notes: notes || null,
+        lines: lines.map((l) => ({
+          productId: l.productId || null,
+          description: l.description || undefined,
+          quantity: Number(l.quantity),
+          unitPrice: Number(l.unitPrice),
+          taxRate: Number(l.taxRate),
+        })),
       };
       if (editingId) {
         return editDoc({ data: { companyId: companyId!, id: editingId, ...payload } });
@@ -357,9 +357,7 @@ export function TradeDocsPage({ kind }: { kind: TradeKind }) {
       >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>
-              {editingId ? `Edit ${meta.single}` : `New ${meta.single}`}
-            </DialogTitle>
+            <DialogTitle>{editingId ? `Edit ${meta.single}` : `New ${meta.single}`}</DialogTitle>
           </DialogHeader>
           <form
             className="space-y-4"

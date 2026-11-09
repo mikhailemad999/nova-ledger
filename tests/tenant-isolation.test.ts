@@ -22,6 +22,12 @@ const creds = {
 };
 const ready = Boolean(url && key && creds.a[0] && creds.a[1] && creds.b[0] && creds.b[1]);
 
+if (process.env.CI && !ready) {
+  throw new Error(
+    "Company-isolation tests require SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, TEST_USER_A_EMAIL, TEST_USER_A_PASSWORD, TEST_USER_B_EMAIL, and TEST_USER_B_PASSWORD.",
+  );
+}
+
 async function signIn(email: string, password: string) {
   const client = createClient(url!, key!, { auth: { persistSession: false } });
   const { data, error } = await client.auth.signInWithPassword({ email, password });

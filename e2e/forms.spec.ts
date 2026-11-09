@@ -7,6 +7,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 const email = process.env.E2E_EMAIL;
 const password = process.env.E2E_PASSWORD;
+if (process.env.CI && (!email || !password)) {
+  throw new Error("Browser form tests require E2E_EMAIL and E2E_PASSWORD in CI.");
+}
 test.skip(!email || !password, "E2E_EMAIL / E2E_PASSWORD not set");
 
 const stamp = Date.now().toString().slice(-6);
@@ -157,5 +160,59 @@ for (const t of tradeKinds) {
       await expect(page.getByRole("button", { name: `Delete ${toPost}` })).toHaveCount(0);
       await expect(page.getByRole("button", { name: `Edit ${toPost}` })).toHaveCount(0);
     }
+  });
+
+  test(`${t.path.slice(1)}: recover failed create and edit saves without duplicates`, async ({
+    page,
+  }) => {
+    await open(page, t.path, new RegExp(`new ${t.single}`, "i"));
+    const docNos = async () =>
+      (await page.locator("tbody tr td:first-child button").allInnerTexts()).map((s) => s.trim());
+    const dropNextResponse = async () => {
+      let dropped = false;
+      const pattern = "**/_serverFn**";
+      const failOnce = async (route: import("@playwright/test").Route) => {
+        if (!dropped) {
+          dropped = true;
+          await route.fetch();
+          await route.abort("failed");
+        } else {
+          await route.continue();
+        }
+      };
+      await page.route(pattern, failOnce);
+      await page.getByRole("button", { name: /save draft/i }).click();
+      await expect(page.getByRole("alert")).toContainText("Your entries are still here");
+      await page.unroute(pattern, failOnce);
+    };
+
+    const beforeCreate = await docNos();
+    await page.getByRole("button", { name: new RegExp(`new ${t.single}`, "i") }).click();
+    await page.locator("#partner").selectOption({ index: 1 });
+    await page.getByLabel("Description").first().fill(`Outage create ${stamp}`);
+    await page.getByLabel("Quantity").first().fill("2");
+    await page.getByLabel("Unit price").first().fill("50");
+    await dropNextResponse();
+    await expect(page.getByLabel("Description").first()).toHaveValue(`Outage create ${stamp}`);
+    await page.getByRole("button", { name: /retry save/i }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect.poll(async () => (await docNos()).length).toBe(beforeCreate.length + 1);
+    const createdDoc = (await docNos()).find((n) => !beforeCreate.includes(n));
+    expect(createdDoc).toBeTruthy();
+
+    await page.getByRole("button", { name: `Edit ${createdDoc}` }).click();
+    await page.getByLabel("Description").first().fill(`Outage edit ${stamp}`);
+    await page.getByLabel("Quantity").first().fill("3");
+    await page.getByLabel("Unit price").first().fill("40");
+    await dropNextResponse();
+    await expect(page.getByLabel("Description").first()).toHaveValue(`Outage edit ${stamp}`);
+    await page.getByRole("button", { name: /retry save/i }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    const editedRow = page.getByRole("row").filter({ hasText: createdDoc });
+    await expect(editedRow).toContainText("$120.00");
+    await expect.poll(async () => (await docNos()).length).toBe(beforeCreate.length + 1);
+
+    await page.getByRole("button", { name: `Delete ${createdDoc}` }).click();
+    await expect(page.getByRole("row").filter({ hasText: createdDoc })).toHaveCount(0);
   });
 }

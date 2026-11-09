@@ -58,16 +58,16 @@ The CI workflow requires all of the following repository secrets. It stops at th
 
 In GitHub, open the repository's **Settings → Secrets and variables → Actions → New repository secret**, then add:
 
-| Secret | Used for |
-| --- | --- |
-| `SUPABASE_URL` | Test connection to the Lovable Cloud backend |
+| Secret                     | Used for                                     |
+| -------------------------- | -------------------------------------------- |
+| `SUPABASE_URL`             | Test connection to the Lovable Cloud backend |
 | `SUPABASE_PUBLISHABLE_KEY` | Test connection to the Lovable Cloud backend |
-| `TEST_USER_A_EMAIL` | First company-isolation test account |
-| `TEST_USER_A_PASSWORD` | First company-isolation test account |
-| `TEST_USER_B_EMAIL` | Second company-isolation test account |
-| `TEST_USER_B_PASSWORD` | Second company-isolation test account |
-| `E2E_EMAIL` | Browser tests; use an owner/admin account |
-| `E2E_PASSWORD` | Browser test account password |
+| `TEST_USER_A_EMAIL`        | First company-isolation test account         |
+| `TEST_USER_A_PASSWORD`     | First company-isolation test account         |
+| `TEST_USER_B_EMAIL`        | Second company-isolation test account        |
+| `TEST_USER_B_PASSWORD`     | Second company-isolation test account        |
+| `E2E_EMAIL`                | Browser tests; use an owner/admin account    |
+| `E2E_PASSWORD`             | Browser test account password                |
 
 The two `TEST_USER` accounts must have access to different companies. `E2E_EMAIL` may be the same account as `TEST_USER_A_EMAIL`.
 
